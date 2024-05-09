@@ -8,5 +8,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/users", require("./routes/user.route"));
+app.use("/tags", require("./routes/tag.route"));
+app.use("/questions", require("./routes/question.route"));
+app.use("/responses", require("./routes/response.route"));
 
 module.exports = app;
