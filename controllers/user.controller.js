@@ -1,4 +1,5 @@
 const { User } = require("../models");
+const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -57,5 +58,33 @@ exports.deleteUser = async (req, res) => {
     return res
       .status(500)
       .json({ mensaje: "Hubo un error al eliminar el usuario" });
+  }
+};
+
+exports.uploadAvatar = async (req, res) => {
+  const { file, user } = req;
+  try {
+    const processResult = async (result) => {
+      const updateUser = await User.update(
+        {
+          photo_url: result.url,
+        },
+        {
+          where: { id: user.id },
+        }
+      );
+
+      return updateUser;
+    };
+    if (user.photo_url) {
+      await deleteFile(user.photo_url, "platform/avatars/");
+    }
+    await uploadFile(file, "platform/avatars", processResult);
+    return res.json({ message: "Foto de perfil actualizada con exito" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ mensaje: "Hubo un error al subir el avatar del usuario" });
   }
 };

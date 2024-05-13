@@ -13,7 +13,7 @@ exports.createResponse = async (req, res) => {
     });
     return res.json(newResponse);
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
@@ -47,11 +47,30 @@ exports.getResponse = async (req, res, next) => {
       }
       return res.json(resp);
     } else {
-      return next(new AppError("Respuesta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Respuesta no encontrada!",
+      });
     }
   } catch (error) {
-    console.log({ error })
-    res.status(500).json({ error: "Error al obtener la respuesta" });
+    res.status(500).json({ message: "Error al obtener la respuesta" });
+  }
+};
+
+exports.getResponsesByUser = async (req, res) => {
+  console.log(req.user);
+  try {
+    const responses = await Response.findAll({
+      where: { UserId: req.user.id },
+      include: {
+        model: Question,
+        attributes: ["id", "title"],
+      },
+    });
+
+    return res.json(responses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener la respuesta" });
   }
 };
 
@@ -66,10 +85,12 @@ exports.updateResponse = async (req, res, next) => {
     if (updatedCount) {
       return res.json({ message: "Respuesta actualizada correctamente" });
     } else {
-      return next(new AppError("Respuesta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Respuesta no encontrada!",
+      });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error al actualizar la respuesta" });
+    res.status(500).json({ message: "Error al actualizar la respuesta" });
   }
 };
 
@@ -80,9 +101,11 @@ exports.deleteResponse = async (req, res, next) => {
     if (deletedResponseCount) {
       return res.json({ message: "Respuesta eliminada correctamente" });
     } else {
-      return next(new AppError("Respuesta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Respuesta no encontrada!",
+      });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error al eliminar la respuesta" });
+    return res.status(500).json({ message: "Error al eliminar la respuesta" });
   }
 };

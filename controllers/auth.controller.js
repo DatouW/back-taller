@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("./../models/user.model");
-const AppError = require("./../utils/appError");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -10,7 +9,7 @@ const signToken = (id) => {
 };
 
 const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user._id);
+  const token = signToken(user.id);
 
   // Remove password from output
   user.password = undefined;
@@ -27,7 +26,9 @@ exports.login = async (req, res, next) => {
 
   // 1) Check if email and password exist
   if (!email || !password) {
-    return next(new AppError("Please provide email and password!", 400));
+    return res
+      .status(400)
+      .json({ message: "Please provide email and password!" });
   }
   // 2) Check if user exists && password is correct
   let user = await User.findOne({
@@ -35,7 +36,7 @@ exports.login = async (req, res, next) => {
   });
 
   if (!user || !bcrypt.compareSync(password, user.password)) {
-    return next(new AppError("Incorrect email or password", 401));
+    return res.status(401).json({ message: "Incorrect email or password!" });
   }
 
   // 3) If everything ok, send token to client

@@ -1,7 +1,4 @@
 const { Tag, Question, User } = require("../models");
-const sequelize = require("./../database/index");
-
-const AppError = require("./../utils/appError");
 
 exports.getAllTags = async (req, res) => {
   try {
@@ -36,13 +33,15 @@ exports.getQuestionsByTag = async (req, res) => {
 
       return res.json(questions);
     } else {
-      return next(new AppError("Etiqueta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Etiqueta no encontrada!",
+      });
     }
   } catch (error) {
     console.error(error);
     return res
       .status(500)
-      .json({ error: "Error al obtener preguntas por etiqueta" });
+      .json({ message: "Error al obtener preguntas por etiqueta" });
   }
 };
 

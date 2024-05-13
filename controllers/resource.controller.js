@@ -122,7 +122,7 @@ exports.deleteResource = async (req, res) => {
     // Eliminar cada archivo de Cloudinary y la tabla File
     for (let file of files) {
       // Eliminar de Cloudinary
-      await deleteFile(file, "platform/resources");
+      await deleteFile(file.path_url, "platform/resources");
       // Eliminar de la tabla File
       await file.destroy({ transaction });
     }
@@ -198,7 +198,7 @@ exports.updateResource = async (req, res) => {
       if (
         !files.some((file) => file.originalname === existingFiles[j].filename)
       ) {
-        await deleteFile(existingFiles[j], "platform/resources");
+        await deleteFile(existingFiles[j].path_url, "platform/resources");
         await existingFiles[j].destroy({ transaction });
       }
     }
