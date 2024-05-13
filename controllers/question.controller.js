@@ -1,10 +1,17 @@
 const { Question, Tag, User, File } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
+const { assignPoints, getUserTotalPoints } = require("./../utils/pointUtil");
 
 exports.createQuestion = async (req, res) => {
+  const { title, content, tags } = req.body;
   try {
-    const { title, content, tags } = req.body;
+    const totalPoints = await getUserTotalPoints(req.user.id);
+    if (totalPoints < 3) {
+      return res
+        .status(401)
+        .json({ message: "Punto insuficiente para publicar una pregunta" });
+    }
     const newQuestion = await Question.create({
       title,
       content,
@@ -67,6 +74,7 @@ exports.createQuestion = async (req, res) => {
         });
       }
     }
+    await assignPoints(req.user.id, "Publicar pregunta", -3);
     newQuestion.dataValues.files = filesArr;
     return res.json(newQuestion);
   } catch (error) {
@@ -132,6 +140,9 @@ exports.getQuestionById = async (req, res, next) => {
           },
         ],
       });
+      for (let resp of responses) {
+        resp.score = await resp.calculateScore();
+      }
       return res.json({ question, responses });
     } else {
       return res.status(404).send({

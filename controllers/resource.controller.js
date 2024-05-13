@@ -1,6 +1,7 @@
 const { Resource, File, User } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
+const { assignPoints } = require("./../utils/pointUtil");
 
 exports.getAllResources = async (req, res) => {
   try {
@@ -97,7 +98,7 @@ exports.uploadToCloud = async (req, res, next) => {
         "platform/resources",
         processResult
       );
-
+      await assignPoints(req.user.id, "Compartir recursos", 15);
       promises.push(cloudinaryUploadPromise);
     }
 

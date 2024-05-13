@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { User, Point } = require("./../models");
 const { Op } = require("sequelize");
+const { User, Point } = require("./../models");
+const { assignPoints, getUserTotalPoints } = require("./../utils/pointUtil");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -54,19 +55,11 @@ exports.login = async (req, res, next) => {
 
     // 4) If user has not logged in today, assign points for the first login
     if (!lastLogin) {
-      await Point.create({
-        UserId: user.id,
-        action: "Iniciar sesion",
-        points: 2,
-      }); // Assign 2 points for the first login of the day
+      await assignPoints(user.id, "Iniciar Sesion", 2); // Assign 2 points for the first login of the day
     }
 
     // 5) Calculate total points for the day
-    const totalPoints = await Point.sum("points", {
-      where: {
-        UserId: user.id,
-      },
-    });
+    const totalPoints = await getUserTotalPoints(user.id);
 
     user.dataValues.totalPoints = totalPoints;
     //console.log(user, user.totalPoints);
@@ -98,11 +91,7 @@ exports.signup = async (req, res) => {
       });
 
       // 2) Assign points for signup
-      await Point.create({
-        UserId: newUser.id,
-        action: "Registrarse como usuario",
-        points: 10,
-      }); // Assign 10 points for signup
+      await assignPoints(newUser.id, "Registrarse como usuario", 10); // Assign 10 points for signup
 
       // 3) Remove password from response
       newUser.password = undefined;
@@ -114,11 +103,3 @@ exports.signup = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// Function to assign points to a user
-async function assignPoints(user, action, points) {
-  try {
-  } catch (error) {
-    console.error("Error assigning points:", error);
-  }
-}

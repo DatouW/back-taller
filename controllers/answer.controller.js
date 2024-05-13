@@ -1,6 +1,7 @@
 const { Response, Question, Resource, User, File } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
+const { assignPoints } = require("./../utils/pointUtil");
 
 exports.createResponse = async (req, res) => {
   try {
@@ -49,6 +50,7 @@ exports.createResponse = async (req, res) => {
         });
       }
     }
+    await assignPoints(req.user.id, "Responder a la pregunta", 5);
     newResponse.dataValues.files = filesArr;
     return res.json(newResponse);
   } catch (error) {
@@ -70,6 +72,8 @@ exports.getResponse = async (req, res, next) => {
         mensaje: "Respuesta no encontrada!",
       });
     }
+    response.score = await response.calculateScore();
+    return res.json(response);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener la respuesta" });
   }
@@ -91,6 +95,10 @@ exports.getResponsesByUser = async (req, res) => {
         },
       ],
     });
+
+    for (let resp of responses) {
+      resp.score = await resp.calculateScore();
+    }
 
     return res.json(responses);
   } catch (error) {

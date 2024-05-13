@@ -10,7 +10,12 @@ const Like = sequelize.define("Like", {
   is_liked: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
+    defaultValue: false,
+  },
+  is_unliked: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
 });
 

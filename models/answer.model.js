@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database/index");
+const Like = require("./like.model");
 
 const Response = sequelize.define("Response", {
   id: {
@@ -20,5 +21,16 @@ const Response = sequelize.define("Response", {
     allowNull: true,
   },
 });
+
+// Calcular el puntaje de la respuesta
+Response.prototype.calculateScore = async function () {
+  const likes = await Like.count({
+    where: { ResponseId: this.id, is_liked: true },
+  });
+  const unlikes = await Like.count({
+    where: { ResponseId: this.id, is_liked: false },
+  });
+  return likes - unlikes;
+};
 
 module.exports = Response;

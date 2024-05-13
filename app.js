@@ -13,5 +13,6 @@ app.use("/questions", require("./routes/question.route"));
 app.use("/responses", require("./routes/answer.route"));
 app.use("/resources", require("./routes/resource.route"));
 app.use("/categories", require("./routes/category.route"));
+app.use("/points", require("./routes/point.route"));
 
 module.exports = app;
