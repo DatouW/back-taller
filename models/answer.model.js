@@ -1,5 +1,3 @@
-// response.js
-
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database/index");
 
@@ -16,6 +14,10 @@ const Response = sequelize.define("Response", {
   score: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
+  },
+  url_extern: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
 });
 

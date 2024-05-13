@@ -1,18 +1,27 @@
 const express = require("express");
 const QuestionController = require("../controllers/question.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
+const uploadMiddleware = require("../middlewares/upload.middleware");
 
 const router = express.Router();
 
 router
   .route("/")
   .get(QuestionController.getAllQuestions)
-  .post(authMiddleware.verifyToken, QuestionController.createQuestion);
+  .post(
+    authMiddleware.verifyToken,
+    uploadMiddleware.uploadFiles,
+    QuestionController.createQuestion
+  );
 
 router
   .route("/:id")
   .get(QuestionController.getQuestionById)
-  .put(authMiddleware.verifyToken, QuestionController.updateQuestion)
+  .put(
+    authMiddleware.verifyToken,
+    uploadMiddleware.uploadFiles,
+    QuestionController.updateQuestion
+  )
   .delete(authMiddleware.verifyToken, QuestionController.deleteQuestion);
 
 router.get(

@@ -14,23 +14,29 @@ Question.belongsTo(User);
 User.hasMany(Response);
 Response.belongsTo(User);
 
-Question.hasMany(Response);
-Response.belongsTo(Question);
-
-Question.belongsToMany(Tag, { through: "QuestionTag" });
-Tag.belongsToMany(Question, { through: "QuestionTag" });
-
 User.hasMany(Resource);
 Resource.belongsTo(User);
-
-Resource.hasMany(File);
-File.belongsTo(Resource);
 
 User.hasMany(Point);
 Point.belongsTo(User);
 
 User.hasMany(Like);
 Like.belongsTo(User);
+
+Question.hasMany(Response);
+Response.belongsTo(Question);
+
+Question.belongsToMany(Tag, { through: "QuestionTag" });
+Tag.belongsToMany(Question, { through: "QuestionTag" });
+
+Resource.hasMany(File);
+File.belongsTo(Resource);
+
+Question.hasMany(File);
+File.belongsTo(Question);
+
+Response.hasMany(File);
+File.belongsTo(Response);
 
 Response.hasMany(Like);
 Like.belongsTo(Response);

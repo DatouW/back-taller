@@ -48,6 +48,7 @@ exports.login = async (req, res, next) => {
       where: {
         UserId: user.id,
         createdAt: { [Op.gte]: today },
+        action: "Iniciar sesion",
       },
     });
 
@@ -98,7 +99,7 @@ exports.signup = async (req, res) => {
 
       // 2) Assign points for signup
       await Point.create({
-        UserId: user.id,
+        UserId: newUser.id,
         action: "Registrarse como usuario",
         points: 10,
       }); // Assign 10 points for signup

@@ -22,4 +22,11 @@ router
     uploadMiddleware.uploadFiles,
     resourceController.updateResource
   );
+
+router.get(
+  "/v1/user",
+  authMiddleware.verifyToken,
+  resourceController.getResourcesByUser
+);
+
 module.exports = router;

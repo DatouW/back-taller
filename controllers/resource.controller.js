@@ -1,4 +1,4 @@
-const { Resource, File, User, Response } = require("../models");
+const { Resource, File, User } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 
@@ -46,8 +46,27 @@ exports.getResource = async (req, res) => {
   }
 };
 
+exports.getResourcesByUser = async (req, res) => {
+  try {
+    const resource = await Resource.findAll({
+      where: { UserId: req.user.id },
+      include: [
+        {
+          model: File,
+          attributes: ["id", "filename", "path_url"],
+        },
+      ],
+    });
+    return res.json(resource);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error occurred while fetching resource: " + error.message,
+    });
+  }
+};
+
 exports.uploadToCloud = async (req, res, next) => {
-  const { description, userId, responseId } = req.body;
+  const { description, categoryId } = req.body;
   let promises = [];
   let files = req.files;
   //console.log(files);
@@ -60,8 +79,8 @@ exports.uploadToCloud = async (req, res, next) => {
         if (!resource)
           resource = await Resource.create({
             description,
-            UserId: userId,
-            ResponseId: responseId,
+            UserId: req.user.id,
+            CategoryId: categoryId,
           });
 
         // Guardar en el modelo File
