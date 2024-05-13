@@ -29,6 +29,24 @@ exports.getResponse = async (req, res, next) => {
   }
 };
 
+exports.getResponsesByUser = async (req, res) => {
+  console.log(req.user);
+  try {
+    const responses = await Response.findAll({
+      where: { UserId: req.user.id },
+      include: {
+        model: Question,
+        attributes: ["id", "title"],
+      },
+    });
+
+    return res.json(responses);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener la respuesta" });
+  }
+};
+
 exports.updateResponse = async (req, res, next) => {
   const { id } = req.params;
   const { description } = req.body;

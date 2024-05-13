@@ -14,4 +14,9 @@ router
   .put(authMiddleware.verifyToken, responseController.updateResponse)
   .delete(authMiddleware.verifyToken, responseController.deleteResponse);
 
+router.get(
+  "/v1/user",
+  authMiddleware.verifyToken,
+  responseController.getResponsesByUser
+);
 module.exports = router;

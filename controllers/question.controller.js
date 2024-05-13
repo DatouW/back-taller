@@ -90,6 +90,25 @@ exports.getQuestionById = async (req, res, next) => {
   }
 };
 
+exports.getQuestionsByUser = async (req, res, next) => {
+  try {
+    const questions = await Question.findAll({
+      include: [
+        {
+          model: Tag, // Incluir el modelo de Tag
+          attributes: ["id", "name"], // No incluir atributos de Tag en la respuesta
+          through: { attributes: [] }, // Especificar el nombre de la tabla intermedia en mayúsculas
+        },
+      ],
+      where: { UserId: req.user.id },
+    });
+    return res.json(questions);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error al obtener la pregunta" });
+  }
+};
+
 exports.deleteQuestion = async (req, res, next) => {
   const { id } = req.params;
   try {

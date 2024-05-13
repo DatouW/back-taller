@@ -15,4 +15,10 @@ router
   .put(authMiddleware.verifyToken, QuestionController.updateQuestion)
   .delete(authMiddleware.verifyToken, QuestionController.deleteQuestion);
 
+router.get(
+  "/v1/user",
+  authMiddleware.verifyToken,
+  QuestionController.getQuestionsByUser
+);
+
 module.exports = router;
