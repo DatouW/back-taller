@@ -30,11 +30,13 @@ const uploadFile = (file, folder, processResult) => {
   });
 };
 
-const deleteFile = async (file, folder = "") => {
-  const public_id = folder + path.parse(file.path_url).name;
+const deleteFile = async (url, folder = "") => {
+  const public_id = folder + path.parse(url).name;
   // Dividir la URL en segmentos
-  const pathSegments = file.path_url.split("/");
+  const pathSegments = url.split("/");
   const resource_type = pathSegments[4];
+  //console.log(resource_type);
+  //console.log(public_id);
   // Eliminar el archivo de Cloudinary
   await cloudinary.uploader.destroy(public_id, { resource_type });
 };

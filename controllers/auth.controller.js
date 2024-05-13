@@ -10,7 +10,7 @@ const signToken = (id) => {
 };
 
 const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user._id);
+  const token = signToken(user.id);
 
   // Remove password from output
   user.password = undefined;
