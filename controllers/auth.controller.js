@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const User = require("./../models/user.model");
+const { User, Point } = require("./../models");
+const { Op } = require("sequelize");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -30,47 +31,93 @@ exports.login = async (req, res, next) => {
       .status(400)
       .json({ message: "Please provide email and password!" });
   }
-  // 2) Check if user exists && password is correct
-  let user = await User.findOne({
-    where: { email },
-  });
 
-  if (!user || !bcrypt.compareSync(password, user.password)) {
-    return res.status(401).json({ message: "Incorrect email or password!" });
+  try {
+    // 2) Check if user exists && password is correct
+    const user = await User.findOne({ where: { email } });
+
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+      return res.status(401).json({ message: "Incorrect email or password!" });
+    }
+
+    // 3) Check if user has already logged in today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastLogin = await Point.findOne({
+      where: {
+        UserId: user.id,
+        createdAt: { [Op.gte]: today },
+      },
+    });
+
+    // 4) If user has not logged in today, assign points for the first login
+    if (!lastLogin) {
+      await Point.create({
+        UserId: user.id,
+        action: "Iniciar sesion",
+        points: 2,
+      }); // Assign 2 points for the first login of the day
+    }
+
+    // 5) Calculate total points for the day
+    const totalPoints = await Point.sum("points", {
+      where: {
+        UserId: user.id,
+      },
+    });
+
+    user.dataValues.totalPoints = totalPoints;
+    //console.log(user, user.totalPoints);
+
+    // 6) If everything is ok, send token and total points to client
+    createSendToken(user, 200, res);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
   }
-
-  // 3) If everything ok, send token to client
-  createSendToken(user, 200, res);
 };
 
 exports.signup = async (req, res) => {
   const { name, email, password, role, phone } = req.body;
+
   try {
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    });
+    const user = await User.findOne({ where: { email } });
+
     if (user) {
-      return res.status(400).send({
-        mensaje:
-          "Este correo ya esta en uso o ya esta registrado. Prueba otro.",
-      });
+      return res.status(400).send({ message: "This email is already in use." });
     } else {
-      const nuevoUsuario = await User.create({
+      // 1) Create user
+      const newUser = await User.create({
         name,
         email,
         password: bcrypt.hashSync(password, 10),
         role,
         phone: phone ? phone : null,
       });
-      nuevoUsuario.password = undefined;
-      return res.json(nuevoUsuario);
+
+      // 2) Assign points for signup
+      await Point.create({
+        UserId: user.id,
+        action: "Registrarse como usuario",
+        points: 10,
+      }); // Assign 10 points for signup
+
+      // 3) Remove password from response
+      newUser.password = undefined;
+
+      return res.json(newUser);
     }
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({ mensaje: "Hubo un error al crear el usuario" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Function to assign points to a user
+async function assignPoints(user, action, points) {
+  try {
+  } catch (error) {
+    console.error("Error assigning points:", error);
+  }
+}

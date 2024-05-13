@@ -1,13 +1,12 @@
-const { Response, Question, Resource, User, File } = require("../models");
+const { Response, Question, User } = require("../models");
 
 exports.createResponse = async (req, res) => {
   try {
-    const { description, questionId, userId, url_extern } = req.body;
+    const { description, questionId, userId } = req.body;
     const newResponse = await Response.create({
       description,
       QuestionId: questionId,
       UserId: userId,
-      url_extern,
     });
     return res.json(newResponse);
   } catch (error) {
@@ -18,32 +17,9 @@ exports.createResponse = async (req, res) => {
 exports.getResponse = async (req, res, next) => {
   const { id } = req.params;
   try {
-    let response = await Response.findByPk(id, {
-      include: "resources",
-    });
+    const response = await Response.findByPk(id);
     if (response) {
-      const { resources, ...dataRes } = response.toJSON();
-      let resData = [];
-      for (let res of resources) {
-        const resSearch = await Resource.findByPk(res.id, {
-          include: [
-            {
-              model: File,
-              attributes: ["id", "filename", "path_url"],
-            },
-            {
-              model: User,
-              attributes: ["id", "name"],
-            },
-          ],
-        });
-        resData.push(resSearch);
-      }
-      const resp = {
-        ...dataRes,
-        resources: resData,
-      };
-      return res.json(resp);
+      return res.json(response);
     } else {
       return res.status(404).send({
         mensaje: "Respuesta no encontrada!",

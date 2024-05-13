@@ -1,7 +1,4 @@
-const cloudinary = require("../config/cloudinaryConfig");
-const path = require("path");
-
-const { Resource, File, User,Response } = require("../models");
+const { Resource, File, User, Response } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 
@@ -64,7 +61,7 @@ exports.uploadToCloud = async (req, res, next) => {
           resource = await Resource.create({
             description,
             UserId: userId,
-            ResponseId:responseId
+            ResponseId: responseId,
           });
 
         // Guardar en el modelo File
