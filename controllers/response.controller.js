@@ -1,5 +1,4 @@
 const { Response, Question, User } = require("../models");
-const AppError = require("./../utils/appError");
 
 exports.createResponse = async (req, res) => {
   try {
@@ -11,7 +10,7 @@ exports.createResponse = async (req, res) => {
     });
     return res.json(newResponse);
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
@@ -22,10 +21,12 @@ exports.getResponse = async (req, res, next) => {
     if (response) {
       return res.json(response);
     } else {
-      return next(new AppError("Respuesta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Respuesta no encontrada!",
+      });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener la respuesta" });
+    res.status(500).json({ message: "Error al obtener la respuesta" });
   }
 };
 
@@ -58,10 +59,12 @@ exports.updateResponse = async (req, res, next) => {
     if (updatedCount) {
       return res.json({ message: "Respuesta actualizada correctamente" });
     } else {
-      return next(new AppError("Respuesta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Respuesta no encontrada!",
+      });
     }
   } catch (error) {
-    res.status(500).json({ error: "Error al actualizar la respuesta" });
+    res.status(500).json({ message: "Error al actualizar la respuesta" });
   }
 };
 
@@ -72,9 +75,11 @@ exports.deleteResponse = async (req, res, next) => {
     if (deletedResponseCount) {
       return res.json({ message: "Respuesta eliminada correctamente" });
     } else {
-      return next(new AppError("Respuesta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Respuesta no encontrada!",
+      });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error al eliminar la respuesta" });
+    return res.status(500).json({ message: "Error al eliminar la respuesta" });
   }
 };

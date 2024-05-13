@@ -1,5 +1,4 @@
 const { Question, Tag, User } = require("../models");
-const AppError = require("./../utils/appError");
 
 exports.createQuestion = async (req, res) => {
   try {
@@ -30,7 +29,7 @@ exports.createQuestion = async (req, res) => {
     }
     return res.json(newQuestion);
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
@@ -51,7 +50,7 @@ exports.getAllQuestions = async (req, res) => {
     });
     return res.json(questions);
   } catch (error) {
-    return res.status(500).json({ error: "Error al obtener las preguntas" });
+    return res.status(500).json({ message: "Error al obtener las preguntas" });
   }
 };
 
@@ -82,11 +81,13 @@ exports.getQuestionById = async (req, res, next) => {
       });
       return res.json({ question, responses });
     } else {
-      return next(new AppError("Pregunta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Pregunta no encontrada!",
+      });
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error al obtener la pregunta" });
+    return res.status(500).json({ message: "Error al obtener la pregunta" });
   }
 };
 
@@ -105,7 +106,7 @@ exports.getQuestionsByUser = async (req, res, next) => {
     return res.json(questions);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error al obtener la pregunta" });
+    return res.status(500).json({ message: "Error al obtener la pregunta" });
   }
 };
 
@@ -116,10 +117,12 @@ exports.deleteQuestion = async (req, res, next) => {
     if (deletedQuestionCount) {
       return res.json({ message: "Pregunta eliminada correctamente" });
     } else {
-      return next(new AppError("Pregunta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Pregunta no encontrada!",
+      });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error al eliminar la pregunta" });
+    return res.status(500).json({ message: "Error al eliminar la pregunta" });
   }
 };
 
@@ -134,9 +137,11 @@ exports.updateQuestion = async (req, res, next) => {
     if (updatedCount) {
       return res.json({ message: "Pregunta actualizada correctamente" });
     } else {
-      return next(new AppError("Pregunta no encontrada!", 404));
+      return res.status(404).send({
+        mensaje: "Pregunta no encontrada!",
+      });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error al actualizar la pregunta" });
+    return res.status(500).json({ message: "Error al actualizar la pregunta" });
   }
 };
