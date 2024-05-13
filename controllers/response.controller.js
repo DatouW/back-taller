@@ -1,13 +1,15 @@
-const { Response, Question, User } = require("../models");
+const { Response, Question, Resource, User, File } = require("../models");
 const AppError = require("./../utils/appError");
+
 
 exports.createResponse = async (req, res) => {
   try {
-    const { description, questionId, userId } = req.body;
+    const { description, questionId, userId, url_extern } = req.body;
     const newResponse = await Response.create({
       description,
       QuestionId: questionId,
       UserId: userId,
+      url_extern
     });
     return res.json(newResponse);
   } catch (error) {
@@ -18,13 +20,37 @@ exports.createResponse = async (req, res) => {
 exports.getResponse = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const response = await Response.findByPk(id);
+    let response = await Response.findByPk(id, {
+      include: 'resources'
+    });
     if (response) {
-      return res.json(response);
+      const { resources, ...dataRes } = response.toJSON()
+      let resData = []
+      for (let res of resources) {
+        const resSearch = await Resource.findByPk(res.id, {
+          include: [
+            {
+              model: File,
+              attributes: ["id", "filename", "path_url"],
+            },
+            {
+              model: User,
+              attributes: ["id", "name"],
+            },
+          ],
+        })
+        resData.push(resSearch)
+      }
+      const resp={
+        ...dataRes,
+        resources:resData
+      }
+      return res.json(resp);
     } else {
       return next(new AppError("Respuesta no encontrada!", 404));
     }
   } catch (error) {
+    console.log({ error })
     res.status(500).json({ error: "Error al obtener la respuesta" });
   }
 };

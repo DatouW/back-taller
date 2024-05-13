@@ -1,7 +1,7 @@
 const cloudinary = require("../config/cloudinaryConfig");
 const path = require("path");
 
-const { Resource, File, User } = require("../models");
+const { Resource, File, User,Response } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 
@@ -50,7 +50,7 @@ exports.getResource = async (req, res) => {
 };
 
 exports.uploadToCloud = async (req, res, next) => {
-  const { description, userId } = req.body;
+  const { description, userId, responseId } = req.body;
   let promises = [];
   let files = req.files;
   //console.log(files);
@@ -64,6 +64,7 @@ exports.uploadToCloud = async (req, res, next) => {
           resource = await Resource.create({
             description,
             UserId: userId,
+            ResponseId:responseId
           });
 
         // Guardar en el modelo File

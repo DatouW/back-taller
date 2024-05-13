@@ -2,6 +2,7 @@
 
 const { DataTypes } = require("sequelize");
 const sequelize = require("./../database/index");
+const Resource = require("./resource.model");
 
 const Response = sequelize.define("Response", {
   id: {
@@ -17,6 +18,12 @@ const Response = sequelize.define("Response", {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
+  url_extern: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
+
+Response.hasMany(Resource, { as: "resources" });
 
 module.exports = Response;
