@@ -1,4 +1,4 @@
-const { Like, User, Response } = require("../models");
+const { Like, User, Response, Point } = require("../models");
 const { assignPoints, getUserTotalPoints } = require("../utils/pointUtil");
 
 exports.unlikeAnswer = async (req, res) => {
@@ -105,5 +105,19 @@ exports.downloadResouces = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Ocurrió un error al descargar resources. " });
+  }
+};
+
+exports.getPointRecordsByUser = async (req, res) => {
+  try {
+    const points = await Point.findAll({
+      where: { UserId: req.user.id },
+    });
+    return res.json(points);
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Ocurrió un error al obtener historial de puntos. " });
   }
 };

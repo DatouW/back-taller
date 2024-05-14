@@ -5,6 +5,11 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const router = express.Router();
 
 router.get("/", authMiddleware.verifyToken, pointController.getTotalPoints);
+router.get(
+  "/user",
+  authMiddleware.verifyToken,
+  pointController.getPointRecordsByUser
+);
 router.post(
   "/unlike",
   authMiddleware.verifyToken,
