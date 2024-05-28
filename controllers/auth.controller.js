@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
 const { User, Point } = require("./../models");
 const { assignPoints, getUserTotalPoints } = require("./../utils/pointUtil");
+const { INICIAR_SESION, REGISTRAR_USUARIO } = require("./../utils/constant");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -44,18 +45,19 @@ exports.login = async (req, res, next) => {
     // 3) Check if user has already logged in today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
+    console.log(today);
     const lastLogin = await Point.findOne({
       where: {
         UserId: user.id,
         createdAt: { [Op.gte]: today },
-        action: "Iniciar sesion",
+        action: INICIAR_SESION,
       },
     });
 
+    console.log("login user: " + lastLogin);
     // 4) If user has not logged in today, assign points for the first login
     if (!lastLogin) {
-      await assignPoints(user.id, "Iniciar Sesion", 2); // Assign 2 points for the first login of the day
+      await assignPoints(user.id, INICIAR_SESION, 2); // Assign 2 points for the first login of the day
     }
 
     // 5) Calculate total points for the day
@@ -87,11 +89,11 @@ exports.signup = async (req, res) => {
         email,
         password: bcrypt.hashSync(password, 10),
         role,
-        phone: phone ? phone : null,
+        phone,
       });
 
       // 2) Assign points for signup
-      await assignPoints(newUser.id, "Registrarse como usuario", 10); // Assign 10 points for signup
+      await assignPoints(newUser.id, REGISTRAR_USUARIO, 10); // Assign 10 points for signup
 
       // 3) Remove password from response
       newUser.password = undefined;
