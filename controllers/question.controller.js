@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { Question, Tag, User, File } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
@@ -302,5 +303,67 @@ const deleteFiles = async (question, transaction) => {
     await deleteFile(file.path_url, "platform/questions");
     // Eliminar de la tabla File
     await file.destroy({ transaction });
+  }
+};
+
+exports.searchQuestions = async (req, res) => {
+  const { query, startDate, endDate, tag } = req.query;
+  //console.log(query, author, startDate, endDate, tag);
+
+  const searchCriteria = {
+    where: {},
+    include: [
+      {
+        model: User,
+        attributes: ["id", "name"],
+      },
+      {
+        model: Tag,
+        attributes: ["id", "name"],
+        through: { attributes: [] },
+      },
+      {
+        model: File,
+        attributes: ["id", "filename", "path_url"],
+      },
+    ],
+  };
+
+  if (query) {
+    searchCriteria.where = {
+      [Op.or]: [
+        { title: { [Op.iLike]: `%${query}%` } },
+        { content: { [Op.iLike]: `%${query}%` } },
+      ],
+    };
+    searchCriteria.include[0].where = {
+      name: {
+        [Op.iLike]: `%${author}%`,
+      },
+    };
+  }
+
+  if (startDate || endDate) {
+    let start = startDate ? new Date(startDate) : new Date("1970-01-01");
+    let end = endDate ? new Date(endDate) : new Date();
+    searchCriteria.where.createdAt = {
+      [Op.between]: [start, end],
+    };
+  }
+
+  if (tag) {
+    searchCriteria.include[1].where = {
+      name: {
+        [Op.iLike]: `%${tag}%`,
+      },
+    };
+  }
+
+  try {
+    const questions = await Question.findAll(searchCriteria);
+    res.json(questions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al realizar la búsqueda" });
   }
 };

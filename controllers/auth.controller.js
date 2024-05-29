@@ -54,7 +54,6 @@ exports.login = async (req, res, next) => {
       },
     });
 
-    console.log("login user: " + lastLogin);
     // 4) If user has not logged in today, assign points for the first login
     if (!lastLogin) {
       await assignPoints(user.id, INICIAR_SESION, 2); // Assign 2 points for the first login of the day

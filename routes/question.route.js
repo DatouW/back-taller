@@ -24,6 +24,8 @@ router
   )
   .delete(authMiddleware.verifyToken, QuestionController.deleteQuestion);
 
+router.get("/v1/search", QuestionController.searchQuestions);
+
 router.get(
   "/v1/user",
   authMiddleware.verifyToken,
