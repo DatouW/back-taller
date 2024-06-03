@@ -7,6 +7,7 @@ const Resource = require("./resource.model");
 const Point = require("./point.model");
 const Like = require("./like.model");
 const Category = require("./category.model");
+const Report = require("./report.model");
 
 User.hasMany(Question);
 Question.belongsTo(User);
@@ -44,6 +45,12 @@ Like.belongsTo(Response);
 Category.hasMany(Resource);
 Resource.belongsTo(Category);
 
+Question.hasOne(Report);
+Report.belongsTo(Question);
+
+Response.hasOne(Report);
+Report.belongsTo(Response);
+
 module.exports = {
   User,
   Question,
@@ -54,4 +61,5 @@ module.exports = {
   Point,
   Like,
   Category,
+  Report,
 };

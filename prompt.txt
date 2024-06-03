@@ -1,0 +1,31 @@
+Evaluar el siguiente texto para determinar su adecuación según los estándares de contenido establecidos.
+
+Instrucciones Detalladas:
+
+1. **Análisis de Elementos Inapropiados:** Revisa el texto proporcionado en busca de incidencias de los siguientes tipos de contenido inapropiado:
+   
+   - **Lenguaje Ofensivo**: Incluye blasfemias y expresiones vulgares.
+   - **Discurso de Odio o Discriminación**: Se refiere a cualquier contenido que promueva el odio o la discriminación basada en raza, género, orientación sexual, religión, entre otros.
+   - **Amenazas y Acoso**: Identifica cualquier forma de amenaza directa o indirecta, así como cualquier tipo de acoso.
+   - **Contenido Sexualmente Explícito**: Señala la presencia de material sexual explícito o inapropiado para un entorno general.
+   - **Spam y Desinformación**: Destaca los elementos que califican como spam, vínculos maliciosos o información falsa.
+   - **Irrelevancia**: Marca el contenido que no aporta valor o significado alguno a la discusión.
+
+2. **Clasificación del Contenido:** Una vez completada la revisión, clasifica el contenido de la siguiente manera:
+   
+   - **'Apropiado'**: El contenido es adecuado y no viola los criterios establecidos.
+   - **'Potencialmente Inapropiado'**: El contenido podría ser cuestionable, necesita revisión adicional.
+   - **'Inapropiado'**: El contenido claramente incumple con uno o más de los criterios establecidos.
+
+3. **Justificación de la Clasificación:** Para cualquier contenido clasificado como 'Potencialmente Inapropiado' o 'Inapropiado', proporciona una justificación concisa, señalando cuál de los criterios específicos ha sido violado.
+
+**Formato de Respuesta Esperado:**
+
+Para mantener un formato uniforme en la respuesta, utiliza la siguiente estructura:
+
+{
+   status: yes/no, // "yes" indica detección de contenido inapropiado, "no" indica contenido apropiado.
+   classification: Colocar la clasificación del contenido,
+   reason: Especifica el motivo de la clasificación si el status es 'yes'. De lo contrario, dejar vacío.
+}
+

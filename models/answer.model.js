@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../database/index");
 const Like = require("./like.model");
+const { Status } = require("./../utils/constant");
 
 const Response = sequelize.define("Response", {
   id: {
@@ -19,6 +20,10 @@ const Response = sequelize.define("Response", {
   url_extern: {
     type: DataTypes.STRING,
     allowNull: true,
+  },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: Status.SUBMITTED,
   },
 });
 

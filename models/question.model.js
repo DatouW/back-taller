@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("./../database/index");
+const { Status } = require("./../utils/constant");
 
 const Question = sequelize.define("Question", {
   id: {
@@ -14,6 +15,10 @@ const Question = sequelize.define("Question", {
   content: {
     type: DataTypes.TEXT,
     allowNull: false,
+  },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: Status.SUBMITTED,
   },
 });
 

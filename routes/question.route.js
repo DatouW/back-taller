@@ -2,6 +2,7 @@ const express = require("express");
 const QuestionController = require("../controllers/question.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const uploadMiddleware = require("../middlewares/upload.middleware");
+const moderationMiddleware = require("../middlewares/contentModeration.middleware");
 
 const router = express.Router();
 
@@ -11,7 +12,8 @@ router
   .post(
     authMiddleware.verifyToken,
     uploadMiddleware.uploadFiles,
-    QuestionController.createQuestion
+    QuestionController.createQuestion,
+    moderationMiddleware.checkInappropriateContent
   );
 
 router
@@ -20,7 +22,8 @@ router
   .put(
     authMiddleware.verifyToken,
     uploadMiddleware.uploadFiles,
-    QuestionController.updateQuestion
+    QuestionController.updateQuestion,
+    moderationMiddleware.checkInappropriateContent
   )
   .delete(authMiddleware.verifyToken, QuestionController.deleteQuestion);
 

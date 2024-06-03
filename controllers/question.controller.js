@@ -2,9 +2,10 @@ const { Op } = require("sequelize");
 const { Question, Tag, User, File } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
-const { assignPoints, getUserTotalPoints } = require("./../utils/pointUtil");
+const { getUserTotalPoints } = require("./../utils/pointUtil");
+const { Status } = require("./../utils/constant");
 
-exports.createQuestion = async (req, res) => {
+exports.createQuestion = async (req, res, next) => {
   const { title, content, tags } = req.body;
   try {
     const totalPoints = await getUserTotalPoints(req.user.id);
@@ -75,9 +76,14 @@ exports.createQuestion = async (req, res) => {
         });
       }
     }
-    await assignPoints(req.user.id, "Publicar pregunta", -3);
+
     newQuestion.dataValues.files = filesArr;
-    return res.json(newQuestion);
+
+    req.id = newQuestion.id;
+    req.model = Question;
+    req.isNew = true;
+    next();
+    //return res.json(newQuestion);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -101,6 +107,7 @@ exports.getAllQuestions = async (req, res) => {
           attributes: ["id", "filename", "path_url"],
         },
       ],
+      where: { status: Status.APPROVED },
     });
     return res.json(questions);
   } catch (error) {
@@ -140,6 +147,7 @@ exports.getQuestionById = async (req, res, next) => {
             attributes: ["id", "filename", "path_url"],
           },
         ],
+        where: { status: Status.APPROVED },
       });
       for (let resp of responses) {
         resp.score = await resp.calculateScore();
@@ -212,7 +220,7 @@ exports.deleteQuestion = async (req, res, next) => {
 
 exports.updateQuestion = async (req, res, next) => {
   const { id } = req.params;
-  //const { title, content } = req.body;
+  const { title, content } = req.body;
 
   let transaction;
 
@@ -224,9 +232,10 @@ exports.updateQuestion = async (req, res, next) => {
     if (!question) {
       return res.status(404).json({ error: "Question not found" });
     }
-    // question.title = title;
-    // question.content = content;
-    // await question.save({ transaction });
+    question.title = title;
+    question.content = content;
+    await question.save({ transaction });
+
     // Buscar los archivos de File asociados a la Resource
     let existingFiles = await File.findAll({
       where: { QuestionId: question.id },
@@ -279,7 +288,11 @@ exports.updateQuestion = async (req, res, next) => {
 
     await transaction.commit();
 
-    res.json({ message: "Question and files updated." });
+    req.id = id;
+    req.model = Question;
+    req.isNew = false;
+    next();
+    //res.json({ message: "Question and files updated." });
   } catch (err) {
     if (transaction) {
       await transaction.rollback();
@@ -311,7 +324,7 @@ exports.searchQuestions = async (req, res) => {
   //console.log(query, author, startDate, endDate, tag);
 
   const searchCriteria = {
-    where: {},
+    where: { status: Status.APPROVED },
     include: [
       {
         model: User,

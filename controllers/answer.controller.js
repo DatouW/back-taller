@@ -1,9 +1,8 @@
 const { Response, Question, Resource, User, File } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
-const { assignPoints } = require("./../utils/pointUtil");
 
-exports.createResponse = async (req, res) => {
+exports.createResponse = async (req, res, next) => {
   try {
     const { description, questionId, url_extern } = req.body;
     const newResponse = await Response.create({
@@ -50,9 +49,14 @@ exports.createResponse = async (req, res) => {
         });
       }
     }
-    await assignPoints(req.user.id, "Responder a la pregunta", 5);
+
     newResponse.dataValues.files = filesArr;
-    return res.json(newResponse);
+    req.id = newResponse.id;
+    req.model = Response;
+    req.isNew = true;
+    next();
+
+    // return res.json(newResponse);
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
@@ -174,7 +178,12 @@ exports.updateResponse = async (req, res, next) => {
 
     await transaction.commit();
 
-    res.json({ message: "Answer and files updated." });
+    req.id = id;
+    req.model = Response;
+    req.isNew = false;
+    next();
+
+    //res.json({ message: "Answer and files updated." });
   } catch (err) {
     if (transaction) {
       await transaction.rollback();
