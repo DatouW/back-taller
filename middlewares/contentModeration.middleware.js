@@ -3,7 +3,11 @@ const path = require("path");
 const openai = require("../config/openaiConfig");
 const { Report } = require("../models");
 const { assignPoints } = require("./../utils/pointUtil");
-const { Status } = require("../utils/constant");
+const {
+  Status,
+  PUBLICAR_PREGUNTA,
+  PUBLICAR_RESPUESTA,
+} = require("../utils/constant");
 
 exports.checkInappropriateContent = async (req, res, next) => {
   const { id, model, isNew } = req;
@@ -49,15 +53,13 @@ exports.checkInappropriateContent = async (req, res, next) => {
 
       await Report.create(reportData);
 
-      record.status = Status.PENDING_REVIEW;
+      record.status = isNew ? Status.PENDING_REVIEW_F : Status.PENDING_REVIEW;
       await record.save();
       return res
         .status(400)
         .json({ message: "Contenido Inapropiado detectado" });
     } else if (isNew) {
-      const pointAction = isQuestion
-        ? "Publicar pregunta"
-        : "Responder a la pregunta";
+      const pointAction = isQuestion ? PUBLICAR_PREGUNTA : PUBLICAR_RESPUESTA;
 
       const pointValue = isQuestion ? -3 : 5;
 

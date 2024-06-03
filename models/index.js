@@ -45,10 +45,10 @@ Like.belongsTo(Response);
 Category.hasMany(Resource);
 Resource.belongsTo(Category);
 
-Question.hasOne(Report);
+Question.hasMany(Report);
 Report.belongsTo(Question);
 
-Response.hasOne(Report);
+Response.hasMany(Report);
 Report.belongsTo(Response);
 
 module.exports = {
