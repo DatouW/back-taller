@@ -1,6 +1,14 @@
-const { Response, Question, Resource, User, File } = require("../models");
+const {
+  Response,
+  Question,
+  Resource,
+  User,
+  File,
+  Report,
+} = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
+const { Status } = require("../utils/constant");
 
 exports.createResponse = async (req, res, next) => {
   try {
@@ -14,6 +22,8 @@ exports.createResponse = async (req, res, next) => {
     let filesArr = [];
     if (req.files) {
       let files = req.files;
+      const promises = []; // Definir la variable promises aquí
+
       try {
         for (let i = 0; i < files.length; i++) {
           const processResult = async (result) => {
@@ -26,7 +36,8 @@ exports.createResponse = async (req, res, next) => {
 
             return file;
           };
-          let cloudinaryUploadPromise = await uploadFile(
+
+          let cloudinaryUploadPromise = uploadFile(
             files[i],
             "platform/answers",
             processResult
@@ -35,13 +46,8 @@ exports.createResponse = async (req, res, next) => {
           promises.push(cloudinaryUploadPromise);
         }
 
-        Promise.all(promises)
-          .then((resultArr) => {
-            filesArr = resultArr;
-          })
-          .catch((error) => {
-            return res.status(400).json({ message: "Error:" + error });
-          });
+        const resultArr = await Promise.all(promises); // Asegurarse de esperar a que todas las promesas se resuelvan
+        filesArr = resultArr;
       } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -108,6 +114,35 @@ exports.getResponsesByUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al obtener la respuesta" });
+  }
+};
+
+exports.reportAnswer = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const response = await Response.findByPk(id);
+    if (response) {
+      await Report.create({
+        reason: "Reportado por usuario",
+        classification: "Potencialmente Inapropiado",
+        modelType: "Respuesta",
+        status: Status.PENDING_REVIEW,
+        ResponseId: id,
+      });
+      response.status = Status.PENDING_REVIEW;
+      await response.save();
+      return res.json({ message: "Se ha reportado la respuesta con exito." });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "No se ha encontrado la respuesta reportada" });
+    }
+  } catch (error) {
+    console.error(error);
+
+    return res
+      .status(500)
+      .json({ mensaje: "Hubo un error al reportar la respuesta" });
   }
 };
 

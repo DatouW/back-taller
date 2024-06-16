@@ -21,11 +21,11 @@ Instrucciones Detalladas:
 
 **Formato de Respuesta Esperado:**
 
-Para mantener un formato uniforme en la respuesta, utiliza la siguiente estructura:
+Para mantener un formato uniforme en la respuesta, utiliza el siguiente formato JSON:
 
 {
-   status: yes/no, // "yes" indica detección de contenido inapropiado, "no" indica contenido apropiado.
-   classification: Colocar la clasificación del contenido,
-   reason: Especifica el motivo de la clasificación si el status es 'yes'. De lo contrario, dejar vacío.
+   "status": "yes/no",  // "yes" indica detección de contenido inapropiado, "no" indica contenido apropiado.
+   "classification": "Colocar la clasificación del contenido",
+   "reason": "Especifica el motivo de la clasificación si el status es 'yes'. De lo contrario, dejar vacío."
 }
 

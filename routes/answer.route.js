@@ -31,4 +31,10 @@ router.get(
   authMiddleware.verifyToken,
   responseController.getResponsesByUser
 );
+
+router.post(
+  "/report/:id",
+  authMiddleware.verifyToken,
+  responseController.reportAnswer
+);
 module.exports = router;

@@ -35,4 +35,10 @@ router.get(
   QuestionController.getQuestionsByUser
 );
 
+router.post(
+  "/report/:id",
+  authMiddleware.verifyToken,
+  QuestionController.reportQuestion
+);
+
 module.exports = router;

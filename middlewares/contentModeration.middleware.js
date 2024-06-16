@@ -38,8 +38,18 @@ exports.checkInappropriateContent = async (req, res, next) => {
 
     console.log(response.choices[0]);
 
-    const str = response.choices[0].message.content;
-    const contentobj = JSON.parse(str);
+    const responseContent = response.choices[0].message.content;
+    let contentobj;
+    try {
+      contentobj = JSON.parse(responseContent);
+    } catch (jsonError) {
+      console.error("JSON parsing error:", jsonError.message);
+      contentobj = {
+        status: "yes",
+        classification: "Potencialmente Inapropiado",
+        reason: "Se ha fallado la detección automática",
+      };
+    }
     console.log(contentobj);
 
     if (contentobj.status === "yes") {

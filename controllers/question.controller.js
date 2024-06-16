@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Question, Tag, User, File } = require("../models");
+const { Question, Tag, User, File, Report } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 const { getUserTotalPoints } = require("./../utils/pointUtil");
@@ -12,7 +12,7 @@ exports.createQuestion = async (req, res, next) => {
     if (totalPoints < 3) {
       return res
         .status(401)
-        .json({ message: "Punto insuficiente para publicar una pregunta" });
+        .json({ message: "Puntos insuficientes para publicar una pregunta" });
     }
     const newQuestion = await Question.create({
       title,
@@ -41,6 +41,8 @@ exports.createQuestion = async (req, res, next) => {
     let filesArr = [];
     if (req.files) {
       let files = req.files;
+      const promises = []; // Definir la variable promises aquí
+
       try {
         for (let i = 0; i < files.length; i++) {
           const processResult = async (result) => {
@@ -53,7 +55,8 @@ exports.createQuestion = async (req, res, next) => {
 
             return file;
           };
-          let cloudinaryUploadPromise = await uploadFile(
+
+          let cloudinaryUploadPromise = uploadFile(
             files[i],
             "platform/questions",
             processResult
@@ -62,13 +65,8 @@ exports.createQuestion = async (req, res, next) => {
           promises.push(cloudinaryUploadPromise);
         }
 
-        Promise.all(promises)
-          .then((resultArr) => {
-            filesArr = resultArr;
-          })
-          .catch((error) => {
-            return res.status(400).json({ message: "Error:" + error });
-          });
+        const resultArr = await Promise.all(promises);
+        filesArr = resultArr;
       } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -184,6 +182,35 @@ exports.getQuestionsByUser = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error al obtener la pregunta" });
+  }
+};
+
+exports.reportQuestion = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const question = await Question.findByPk(id);
+    if (question) {
+      await Report.create({
+        reason: "Reportado por usuario",
+        classification: "Potencialmente Inapropiado",
+        modelType: "Pregunta",
+        status: Status.PENDING_REVIEW,
+        QuestionId: id,
+      });
+      question.status = Status.PENDING_REVIEW;
+      await question.save();
+      return res.json({ message: "Se ha reportado la pregunta con exito." });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "No se ha encontrado la pregunta reportada" });
+    }
+  } catch (error) {
+    console.error(error);
+
+    return res
+      .status(500)
+      .json({ mensaje: "Hubo un error al reportar la respuesta" });
   }
 };
 
