@@ -348,10 +348,14 @@ const deleteFiles = async (question, transaction) => {
 
 exports.searchQuestions = async (req, res) => {
   const { query, startDate, endDate, tag } = req.query;
-  //console.log(query, author, startDate, endDate, tag);
+
+  // Log the received query parameters
+  console.log("Query Parameters:", query, startDate, endDate, tag);
 
   const searchCriteria = {
-    where: { status: Status.APPROVED },
+    where: {
+      status: Status.APPROVED,
+    },
     include: [
       {
         model: User,
@@ -369,28 +373,25 @@ exports.searchQuestions = async (req, res) => {
     ],
   };
 
+  // Add query conditions if query exists
   if (query) {
-    searchCriteria.where = {
-      [Op.or]: [
-        { title: { [Op.iLike]: `%${query}%` } },
-        { content: { [Op.iLike]: `%${query}%` } },
-      ],
-    };
-    searchCriteria.include[0].where = {
-      name: {
-        [Op.iLike]: `%${author}%`,
-      },
-    };
+    searchCriteria.where[Op.or] = [
+      { title: { [Op.iLike]: `%${query}%` } },
+      { content: { [Op.iLike]: `%${query}%` } },
+      { "$User.name$": { [Op.iLike]: `%${query}%` } },
+    ];
   }
 
+  // Add date range filter
   if (startDate || endDate) {
-    let start = startDate ? new Date(startDate) : new Date("1970-01-01");
-    let end = endDate ? new Date(endDate) : new Date();
+    const start = startDate ? new Date(startDate) : new Date("1970-01-01");
+    const end = endDate ? new Date(endDate) : new Date();
     searchCriteria.where.createdAt = {
       [Op.between]: [start, end],
     };
   }
 
+  // Add tag filter if provided
   if (tag) {
     searchCriteria.include[1].where = {
       name: {
@@ -398,6 +399,9 @@ exports.searchQuestions = async (req, res) => {
       },
     };
   }
+
+  // Log the generated search criteria
+  console.log("Search Criteria:", JSON.stringify(searchCriteria, null, 2));
 
   try {
     const questions = await Question.findAll(searchCriteria);
