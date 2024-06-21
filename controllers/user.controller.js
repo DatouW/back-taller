@@ -2,11 +2,29 @@ const { User } = require("../models");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 
 exports.getAllUsers = async (req, res) => {
+  const { page = 1, pageSize = 10 } = req.query;
+
+  // Convert page and pageSize to integers and ensure they are valid
+  const pageInt = parseInt(page, 10);
+  const pageSizeInt = parseInt(pageSize, 10);
+  const offset = (pageInt - 1) * pageSizeInt;
+  const limit = pageSizeInt;
   try {
-    const usuarios = await User.findAll({
+    const { count, rows } = await User.findAndCountAll({
+      offset,
+      limit,
+      order: [["createdAt", "DESC"]],
       attributes: { exclude: ["password"] },
     });
-    return res.json(usuarios);
+    const totalPages = Math.ceil(count / pageSizeInt);
+
+    return res.json({
+      totalItems: count,
+      totalPages,
+      currentPage: pageInt,
+      pageSize: pageSizeInt,
+      data: rows,
+    });
   } catch (error) {
     console.error(error);
     return res

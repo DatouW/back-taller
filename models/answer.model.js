@@ -10,7 +10,7 @@ const Response = sequelize.define("Response", {
     autoIncrement: true,
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   score: {

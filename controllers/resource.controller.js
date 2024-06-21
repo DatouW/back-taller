@@ -4,8 +4,18 @@ const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 const { assignPoints } = require("./../utils/pointUtil");
 
 exports.getAllResources = async (req, res) => {
+  const { page = 1, pageSize = 10 } = req.query;
+
+  // Convert page and pageSize to integers and ensure they are valid
+  const pageInt = parseInt(page, 10);
+  const pageSizeInt = parseInt(pageSize, 10);
+  const offset = (pageInt - 1) * pageSizeInt;
+  const limit = pageSizeInt;
   try {
-    const resources = await Resource.findAll({
+    const { count, rows } = await Resource.findAndCountAll({
+      offset,
+      limit,
+      order: [["createdAt", "DESC"]],
       include: [
         {
           model: File,
@@ -17,7 +27,15 @@ exports.getAllResources = async (req, res) => {
         },
       ],
     });
-    return res.json(resources);
+    const totalPages = Math.ceil(count / pageSizeInt);
+
+    return res.json({
+      totalItems: count,
+      totalPages,
+      currentPage: pageInt,
+      pageSize: pageSizeInt,
+      data: rows,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Error occurred while fetching resources: " + error.message,
@@ -98,7 +116,7 @@ exports.uploadToCloud = async (req, res, next) => {
         "platform/resources",
         processResult
       );
-      await assignPoints(req.user.id, "Compartir recursos", 15);
+      await assignPoints(req.user.id, "Compartir recursos", 7);
       promises.push(cloudinaryUploadPromise);
     }
 

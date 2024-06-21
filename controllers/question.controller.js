@@ -88,8 +88,18 @@ exports.createQuestion = async (req, res, next) => {
 };
 
 exports.getAllQuestions = async (req, res) => {
+  const { page = 1, pageSize = 10 } = req.query;
+
+  // Convert page and pageSize to integers and ensure they are valid
+  const pageInt = parseInt(page, 10);
+  const pageSizeInt = parseInt(pageSize, 10);
+  const offset = (pageInt - 1) * pageSizeInt;
+  const limit = pageSizeInt;
+
   try {
-    const questions = await Question.findAll({
+    const { count, rows } = await Question.findAndCountAll({
+      offset,
+      limit,
       include: [
         {
           model: Tag,
@@ -106,8 +116,17 @@ exports.getAllQuestions = async (req, res) => {
         },
       ],
       where: { status: Status.APPROVED },
+      order: [["createdAt", "DESC"]],
     });
-    return res.json(questions);
+    const totalPages = Math.ceil(count / pageSizeInt);
+
+    return res.json({
+      totalItems: count,
+      totalPages,
+      currentPage: pageInt,
+      pageSize: pageSizeInt,
+      data: rows,
+    });
   } catch (error) {
     return res.status(500).json({ message: "Error al obtener las preguntas" });
   }
@@ -347,10 +366,15 @@ const deleteFiles = async (question, transaction) => {
 };
 
 exports.searchQuestions = async (req, res) => {
-  const { query, startDate, endDate, tag } = req.query;
+  const { query, startDate, endDate, tag, page = 1, pageSize = 10 } = req.query;
 
   // Log the received query parameters
   console.log("Query Parameters:", query, startDate, endDate, tag);
+
+  const pageInt = parseInt(page, 10);
+  const pageSizeInt = parseInt(pageSize, 10);
+  const offset = (pageInt - 1) * pageSizeInt;
+  const limit = pageSizeInt;
 
   const searchCriteria = {
     where: {
@@ -404,8 +428,21 @@ exports.searchQuestions = async (req, res) => {
   console.log("Search Criteria:", JSON.stringify(searchCriteria, null, 2));
 
   try {
+    // Consulta principal sin paginación
     const questions = await Question.findAll(searchCriteria);
-    res.json(questions);
+
+    // Aplicar paginación manualmente
+    const totalItems = questions.length;
+    const paginatedQuestions = questions.slice(offset, offset + pageSizeInt);
+    const totalPages = Math.ceil(totalItems / pageSizeInt);
+
+    return res.json({
+      totalItems,
+      totalPages,
+      currentPage: pageInt,
+      pageSize: pageSizeInt,
+      data: paginatedQuestions,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al realizar la búsqueda" });

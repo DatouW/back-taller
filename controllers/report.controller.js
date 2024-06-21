@@ -3,9 +3,30 @@ const { Status, PUBLICAR_PREGUNTA } = require("../utils/constant");
 const { assignPoints } = require("../utils/pointUtil");
 
 exports.getAllReports = async (req, res) => {
+  const { page = 1, pageSize = 10 } = req.query;
+
+  // Convert page and pageSize to integers and ensure they are valid
+  const pageInt = parseInt(page, 10);
+  const pageSizeInt = parseInt(pageSize, 10);
+  const offset = (pageInt - 1) * pageSizeInt;
+  const limit = pageSizeInt;
+
   try {
-    const reports = await Report.findAll();
-    return res.json(reports);
+    const { count, rows } = await Report.findAndCountAll({
+      offset,
+      limit,
+      order: [["createdAt", "DESC"]], // Optional: Sort by creation date, most recent first
+    });
+
+    const totalPages = Math.ceil(count / pageSizeInt);
+
+    return res.json({
+      totalItems: count,
+      totalPages,
+      currentPage: pageInt,
+      pageSize: pageSizeInt,
+      data: rows,
+    });
   } catch (error) {
     console.error(error);
     return res
