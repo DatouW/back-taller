@@ -2,8 +2,8 @@ const { Op } = require("sequelize");
 const { Question, Tag, User, File, Report } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
-const { getUserTotalPoints } = require("./../utils/pointUtil");
-const { Status } = require("./../utils/constant");
+const { getUserTotalPoints, assignPoints } = require("./../utils/pointUtil");
+const { Status, ELIMINAR_PREGUNTA, Points } = require("./../utils/constant");
 
 exports.createQuestion = async (req, res, next) => {
   const { title, content, tags } = req.body;
@@ -248,6 +248,12 @@ exports.deleteQuestion = async (req, res, next) => {
     await deleteFiles(question, transaction);
     // Eliminar la pregunta
     await question.destroy({ transaction });
+
+    await assignPoints(
+      question.UserId,
+      ELIMINAR_PREGUNTA,
+      Points.DELETE_PREGUNTA
+    );
 
     await transaction.commit();
 

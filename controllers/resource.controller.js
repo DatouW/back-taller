@@ -2,6 +2,11 @@ const { Resource, File, User } = require("../models");
 const sequelize = require("../database");
 const { uploadFile, deleteFile } = require("../utils/cloudinaryUtil");
 const { assignPoints } = require("./../utils/pointUtil");
+const {
+  COMPARTIR_RECURSO,
+  Points,
+  ELIMINAR_RECURSO,
+} = require("../utils/constant");
 
 exports.getAllResources = async (req, res) => {
   const { page = 1, pageSize = 10 } = req.query;
@@ -116,7 +121,11 @@ exports.uploadToCloud = async (req, res, next) => {
         "platform/resources",
         processResult
       );
-      await assignPoints(req.user.id, "Compartir recursos", 7);
+      await assignPoints(
+        req.user.id,
+        COMPARTIR_RECURSO,
+        Points.COMPARTIR_RECURSO
+      );
       promises.push(cloudinaryUploadPromise);
     }
 
@@ -164,6 +173,12 @@ exports.deleteResource = async (req, res) => {
 
     // Eliminar el recurso
     await resource.destroy({ transaction });
+
+    await assignPoints(
+      resource.UserId,
+      ELIMINAR_RECURSO,
+      Points.DELETE_RECURSO
+    );
 
     await transaction.commit();
 

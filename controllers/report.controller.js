@@ -1,5 +1,10 @@
 const { Report, Question, Response } = require("../models");
-const { Status, PUBLICAR_PREGUNTA } = require("../utils/constant");
+const {
+  Status,
+  PUBLICAR_PREGUNTA,
+  Points,
+  PUBLICAR_RESPUESTA,
+} = require("../utils/constant");
 const { assignPoints } = require("../utils/pointUtil");
 
 exports.getAllReports = async (req, res) => {
@@ -79,14 +84,22 @@ exports.handleReport = async (req, res) => {
         const question = await Question.findByPk(report.QuestionId);
         // Asignar puntos si la pregunta es nueva
         if (question.status === Status.PENDING_REVIEW_F) {
-          await assignPoints(question.UserId, PUBLICAR_PREGUNTA, -3);
+          await assignPoints(
+            question.UserId,
+            PUBLICAR_PREGUNTA,
+            Points.PUBLICAR_PREGUNTA
+          );
         }
         await question.update({ status: Status.APPROVED });
       } else if (report.ResponseId) {
         const response = await Response.findByPk(report.ResponseId);
         // Asignar puntos si la pregunta es nueva
         if (response.status === Status.PENDING_REVIEW_F) {
-          await assignPoints(response.UserId, PUBLICAR_PREGUNTA, 5);
+          await assignPoints(
+            response.UserId,
+            PUBLICAR_RESPUESTA,
+            Points.PUBLICAR_RESPUESTA
+          );
         }
         await response.update({ status: Status.APPROVED });
       }
